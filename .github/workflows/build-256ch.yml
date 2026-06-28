@@ -1,0 +1,33 @@
+name: Build BlackHole 256ch
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build with 256 channels
+        run: |
+          xcodebuild \
+            -project BlackHole.xcodeproj \
+            -scheme BlackHole \
+            -configuration Release \
+            OTHER_CFLAGS="-DkNumber_Of_Channels=256" \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=YES \
+            CODE_SIGNING_ALLOWED=YES \
+            DEVELOPMENT_TEAM="" \
+            build
+
+      - name: Locate driver bundle
+        run: find . -name "*.driver" -print
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BlackHole-256ch
+          path: "**/*.driver"
+          if-no-files-found: error
