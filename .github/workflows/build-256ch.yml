@@ -23,11 +23,13 @@ jobs:
             DEVELOPMENT_TEAM="" \
             build
 
-      - name: Locate driver bundle
-        run: find . -name "*.driver" -print
+      - name: Copy driver to workspace
+        run: |
+          find ~/Library/Developer/Xcode/DerivedData -name "BlackHole.driver" -print
+          cp -r $(find ~/Library/Developer/Xcode/DerivedData -name "BlackHole.driver") ./BlackHole.driver
 
       - uses: actions/upload-artifact@v4
         with:
           name: BlackHole-256ch
-          path: "**/*.driver"
+          path: BlackHole.driver
           if-no-files-found: error
