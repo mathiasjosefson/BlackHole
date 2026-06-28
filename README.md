@@ -247,6 +247,37 @@ Hidden audio devices can be accessed using `kAudioHardwarePropertyTranslateUIDTo
 
 BlackHole can be integrated into your CI/CD. Take a look at the [create_installer.sh](https://github.com/ExistentialAudio/BlackHole/blob/master/Installer/create_installer.sh) shell script to see how the installer is built, signed and notarized.
 
+### Building a Custom Channel Count Without Xcode (GitHub Actions)
+
+If you need a channel count not available in the pre-built installers (e.g. 256ch) and do not have Xcode installed locally, you can build using GitHub Actions on a free macOS runner.
+
+This fork includes a ready-made workflow at [`.github/workflows/build-256ch.yml`](.github/workflows/build-256ch.yml) that builds a 256-channel version using ad-hoc signing (no Apple Developer account required).
+
+**To trigger the build:**
+
+```bash
+gh workflow run build-256ch.yml --repo <your-github-username>/BlackHole
+```
+
+Or trigger it manually via the Actions tab on GitHub.
+
+The workflow overrides the channel count at compile time without modifying any source files:
+
+```
+OTHER_CFLAGS="-DkNumber_Of_Channels=256"
+```
+
+After the build completes (~5 minutes), download the `BlackHole-256ch` artifact from the Actions run and install it:
+
+```bash
+sudo cp -r BlackHole-256ch /Library/Audio/Plug-Ins/HAL/BlackHole256ch.driver
+sudo kill -9 $(pgrep coreaudiod)
+```
+
+The driver will appear as **BlackHole 256ch** in Audio MIDI Setup with 256 input and 256 output channels. It coexists with any pre-built BlackHole versions already installed.
+
+**Why 256ch:** BlackHole channels are a shared loopback pool (input and output draw from the same N channels). For setups requiring e.g. 100 stems in + 40 HOA channels out = 140 channels total, 256ch provides sufficient headroom.
+
 ## Feature Requests
 
 If you are interested in any of the following features please leave a comment in the linked issue. To request a features not listed please create a new issue.
